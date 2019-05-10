@@ -8,7 +8,9 @@ import (
 	"sync"
 	"io"
 	"errors"
-	_ "compress/zlib"
+	"bytes"
+	"encoding/gob"
+	"compress/zlib"
 )
 
 
@@ -61,10 +63,6 @@ func (vfg *VideoFrameData) ReturnPixelLocation(PixelSet *PixelSet, index uint16)
 	return []uint16{PixelSet.Pixels[index].X, PixelSet.Pixels[index].Y}, nil
 }
 
-// func (vfg *VideoFrameData) FromStorage(vfgName string) (error) {
-
-// }
-
 func (vfg *VideoFrameData) ReadFrame(c chan string, videoName string, frameNumber uint64, wg *sync.WaitGroup) error {
 	defer wg.Done()
 	image.RegisterFormat("jpeg", "jpeg", jpeg.Decode, jpeg.DecodeConfig)
@@ -86,9 +84,39 @@ func (vfg *VideoFrameData) ReadFrame(c chan string, videoName string, frameNumbe
 }
 
 func (vfg *VideoFrameData) StoreFrame(frameNumber uint64) bool {
-	
+	fileToCreate = fmt.Sprintf("%s%d.txt", vfg.vfgName, frameNumber)
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	enc.Encode(vfg.PixelSets)
+	encodedStruct := buf.Bytes()
+	buf.Reset()
+	w := zlib.NewWriter(&buf)
+	w.Write(encodedStruct)
+	defer w.Close()
+	_, err := os.Create(fileToCreate)
+	if err != nil {
+			fmt.Println(err)
+	}
+	file, err := os.OpenFile(fileToCreate, os.O_WRONLY, os.ModeAppend)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if _, err := file.Write(buf.Bytes()); err != nil {
+		fmt.Println(err)
+	}
 	return true
 }
+
+func (vfg *VideoFrameData) ReadStoredFrameData(frameNumber uint64) bool {
+	fileToOpen = fmt.Sprintf("%s%d.txt", vfg.vfgName, frameNumber)
+	file, err := os.OpenFile(fileToOpen, 0s.O_RDONLY, 04)
+	if err != nil {
+		fmt.Println("Failed to open file. Does it exist?")
+		return false
+	}
+	
+}
+
   //----------------------------Video Frame Data Private Functions---------------------
 
 func getPixels(file io.Reader, frameNumber uint64) (*ImageData, error) {
