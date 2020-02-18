@@ -3,6 +3,8 @@ package CCME
 import (
 	"bytes"
 	"fmt"
+	handler "github.com/The-Corrupted/go-CCME/Core/CCMEHandlers"
+	"github.com/The-Corrupted/go-CCME/Helpers/OsHandler"
 	"github.com/skip2/go-qrcode"
 	"io/ioutil"
 	"log"
@@ -11,8 +13,6 @@ import (
 	"strconv"
 	"strings"
 	timef "time"
-	handler "github.com/The-Corrupted/go-CCME/Core/CCMEHandlers"
-	"github.com/The-Corrupted/go-CCME/Helpers/OsHandler"
 )
 
 // buf bytes.Buffer
@@ -25,23 +25,23 @@ func NewCCME(Args handler.ArgumentLink) *CCMEClass {
 		gen, _ := strconv.ParseUint(*Args.Values["CreateFrameNumber"], 10, 32)
 		fps, _ := strconv.ParseFloat(*Args.Values["CreateFrameNumberRate"], 64)
 		Paths := []string{fmt.Sprintf("%s/Pictures/QRFrames/%s/", OsHandler.SetUserDir(), *Args.Values["CreateVideoName"])}
-		return &CCMEClass {
+		return &CCMEClass{
 			Function: "Create",
 			Create: Create{
 				PhotoName: *Args.Values["CreateVideoName"],
 				GenNumber: gen,
-				FPS: fps,
+				FPS:       fps,
 			},
 			Paths: Paths,
 		}
 	case "CreateTimed":
 		fps, _ := strconv.ParseFloat(*Args.Values["CreateFrameRate"], 64)
 		Paths := []string{fmt.Sprintf("%s/Pictures/QRFrames/%s/", OsHandler.SetUserDir(), *Args.Values["CreateVideoName"])}
-		return &CCMEClass {
+		return &CCMEClass{
 			Function: "Create",
 			Create: Create{
-				PhotoName: *Args.Values["CreateVideoName"],
-				FPS: fps,
+				PhotoName:     *Args.Values["CreateVideoName"],
+				FPS:           fps,
 				FormattedTime: *Args.Values["CreateVideoTime"],
 			},
 			Paths: Paths,
@@ -49,17 +49,17 @@ func NewCCME(Args handler.ArgumentLink) *CCMEClass {
 	case "Overlay":
 		UserDir := OsHandler.SetUserDir()
 		Paths := []string{fmt.Sprintf("%s/Videos/UnderlayVids/", UserDir), //Underlay Video Path
-						  fmt.Sprintf("%s/Pictures/QRFrames/%s/", UserDir, *Args.Values["OverlayVideo"]), //Overlay Frames Path
-						  fmt.Sprintf("%s/Videos/StampedVideos/", UserDir)} //Save directory for new video
-						  fmt.Sprintf("%s/Pictures/OriginalStamped/%s/", UserDir, *Args.Values["OverlayVideo"]) // Original Frames save directory
-		return &CCMEClass {
+			fmt.Sprintf("%s/Pictures/QRFrames/%s/", UserDir, *Args.Values["OverlayVideo"]), //Overlay Frames Path
+			fmt.Sprintf("%s/Videos/StampedVideos/", UserDir)}                               //Save directory for new video
+		fmt.Sprintf("%s/Pictures/OriginalStamped/%s/", UserDir, *Args.Values["OverlayVideo"]) // Original Frames save directory
+		return &CCMEClass{
 			Function: Args.Name,
 			Overlay: Overlay{
-				UnderlayVideo: *Args.Values["UnderlayVideo"],
-				OverlayName: *Args.Values["OverlayVideo"],
+				UnderlayVideo:   *Args.Values["UnderlayVideo"],
+				OverlayName:     *Args.Values["OverlayVideo"],
 				OverlayPosition: "0:0",
-				SaveOverlay: *Args.Values["SaveOverlay"],
-				FinalVideoName: *Args.Values["OverlayFinalVideoName"],
+				SaveOverlay:     *Args.Values["SaveOverlay"],
+				FinalVideoName:  *Args.Values["OverlayFinalVideoName"],
 			},
 			Paths: Paths,
 		}
@@ -67,7 +67,7 @@ func NewCCME(Args handler.ArgumentLink) *CCMEClass {
 		Paths := []string{fmt.Sprintf("%s/Videos/UnderlayVids/", OsHandler.SetUserDir())}
 		return &CCMEClass{
 			Function: Args.Name,
-			GetFrames: GetFrames {
+			GetFrames: GetFrames{
 				VideoName: *Args.Values["Video"],
 			},
 			Paths: Paths,
@@ -77,14 +77,14 @@ func NewCCME(Args handler.ArgumentLink) *CCMEClass {
 		return &CCMEClass{
 			Function: Args.Name,
 			EditVideo: EditVideo{
-				VideoPath: *Args.Values["VideoPath"],
-				NewFormat: *Args.Values["VidFormat"],
-				Quality: *Args.Values["Quality"],
+				VideoPath:     *Args.Values["VideoPath"],
+				NewFormat:     *Args.Values["VidFormat"],
+				Quality:       *Args.Values["Quality"],
 				EncodingSpeed: *Args.Values["EncodingSpeed"],
-				OrgVidName: *Args.Values["VideoName"],
-				Width: *Args.Values["Width"],
-				Height: *Args.Values["Height"],
-				MaxBV: *Args.Values["BVRate"],
+				OrgVidName:    *Args.Values["VideoName"],
+				Width:         *Args.Values["Width"],
+				Height:        *Args.Values["Height"],
+				MaxBV:         *Args.Values["BVRate"],
 			},
 			Paths: Paths,
 		}
@@ -94,13 +94,13 @@ func NewCCME(Args handler.ArgumentLink) *CCMEClass {
 
 func newTimeCounter(StartValues []uint8) *TimeCounter {
 	if len(StartValues) < 3 {
-		return &TimeCounter {
-			TimeValues: []uint8{0,0,0},
+		return &TimeCounter{
+			TimeValues:  []uint8{0, 0, 0},
 			ZPaddedTime: "00:00:00",
 		}
 	} else {
-		return &TimeCounter {
-			TimeValues: StartValues,
+		return &TimeCounter{
+			TimeValues:  StartValues,
 			ZPaddedTime: fmt.Sprintf("%02d:%02d:%02d", StartValues[0], StartValues[1], StartValues[2]),
 		}
 	}
@@ -113,13 +113,13 @@ func (CCME *CCMEClass) CreateQR(c chan string) {
 
 	}
 	CCME.MakeDirs()
-	TimeCounter := newTimeCounter([]uint8{0,0,0})
+	TimeCounter := newTimeCounter([]uint8{0, 0, 0})
 	var passes uint64 = 0
 	var FramesToSeconds uint8 = 0
 	if CCME.Create.GenNumber > 0 {
 		for passes < CCME.Create.GenNumber {
 			FramesToSeconds += 1
-			if float64(FramesToSeconds) - CCME.Create.FPS >= 0 {
+			if float64(FramesToSeconds)-CCME.Create.FPS >= 0 {
 				fmt.Printf("%f, %f", float64(FramesToSeconds), CCME.Create.FPS)
 				FramesToSeconds = 0
 				TimeCounter.IncrementCounter()
@@ -138,7 +138,7 @@ func (CCME *CCMEClass) CreateQR(c chan string) {
 		GenNumber := VideoTime * uint64(CCME.Create.FPS)
 		for passes < GenNumber {
 			FramesToSeconds += 1
-			if float64(FramesToSeconds) - CCME.Create.FPS <= 0 {
+			if float64(FramesToSeconds)-CCME.Create.FPS <= 0 {
 				fmt.Printf("%f, %f", float64(FramesToSeconds), CCME.Create.FPS)
 				FramesToSeconds = 0
 				TimeCounter.IncrementCounter()
@@ -149,19 +149,19 @@ func (CCME *CCMEClass) CreateQR(c chan string) {
 				continue
 			} else {
 				ReturnString := fmt.Sprintf("Error: %v", err)
-				c<-ReturnString
+				c <- ReturnString
 			}
 		}
 	}
-	c<-"Codes Successfully Created!"
+	c <- "Codes Successfully Created!"
 }
 
 func (CCME *CCMEClass) OverlayQR(c chan string) {
 	fmt.Println("Setting up needed vars")
 	fmt.Printf("OverlayVideo: %v\nUnderlayVideo: %v\n", CCME.Overlay.OverlayName, CCME.Overlay.UnderlayVideo)
 	if !CCME.CheckFunction("Overlay") {
-		c<-"This CCME instance was not created to use overlay. Check its function argument."
-	} 
+		c <- "This CCME instance was not created to use overlay. Check its function argument."
+	}
 	start := timef.Now()
 	split := strings.Split(CCME.Overlay.UnderlayVideo, ".")
 	VideoName := split[0]
@@ -169,17 +169,17 @@ func (CCME *CCMEClass) OverlayQR(c chan string) {
 	AudioFS := GetAudioAndFramerate(fmt.Sprintf("%s%s", CCME.Paths[0], CCME.Overlay.UnderlayVideo))
 	Bitrate, err := EstimateBitrate(fmt.Sprintf("%s%s", CCME.Paths[0], CCME.Overlay.UnderlayVideo))
 	if err != nil {
-		c<-fmt.Sprintf("Failed to get the videos bitrate. %v\n", err)
+		c <- fmt.Sprintf("Failed to get the videos bitrate. %v\n", err)
 	}
 	var BufSize = SetBufSize(Bitrate)
 	TempDirPath := OsHandler.MakeTempDirOverlay(VideoName)
 	if AudioFS[0] != "None" {
 		cmdExtractAudio := exec.Command("ffmpeg", "-i", fmt.Sprintf("%s%s", CCME.Paths[0], CCME.Overlay.UnderlayVideo), "-vn",
-										"-acodec", "copy", fmt.Sprintf("%s%s.%s", TempDirPath[0], VideoName, AudioFS[0]), "-y")	
+			"-acodec", "copy", fmt.Sprintf("%s%s.%s", TempDirPath[0], VideoName, AudioFS[0]), "-y")
 
 		out, err := cmdExtractAudio.CombinedOutput()
 		if err != nil {
-			c<-"Failed to extract audio."
+			c <- "Failed to extract audio."
 		}
 		fmt.Println(BytesToString(out))
 	}
@@ -195,7 +195,7 @@ func (CCME *CCMEClass) OverlayQR(c chan string) {
 	Output, Error := cmdDismantle.CombinedOutput()
 	if Error != nil {
 		fmt.Println(BytesToString(Output))
-		c<-"Failed to dismantle video frames"
+		c <- "Failed to dismantle video frames"
 	}
 
 	//Manually overlay frames
@@ -203,28 +203,28 @@ func (CCME *CCMEClass) OverlayQR(c chan string) {
 	files, err := ioutil.ReadDir(CCME.Paths[1])
 	if err != nil {
 		fmt.Println(CCME.Paths[1])
-		c<-"Failed to read directory."
+		c <- "Failed to read directory."
 		return
 	}
 	size := len(files)
 	files, err = ioutil.ReadDir(TempDirPath[0])
 	if err != nil {
-		c<-"Failed to read directory"
+		c <- "Failed to read directory"
 		return
 	}
 	size2 := len(files)
-	//Make sure a minimum size is found ( if one goes over the other the program fails ) 
+	//Make sure a minimum size is found ( if one goes over the other the program fails )
 	if size2-2 < size && AudioFS[0] != "None" {
-			fmt.Printf("Size set to TempDirPath: %d\n", size2-2)
-			size = size2 - 2
-		} else if size2-1 < size && AudioFS[0] == "None" {
-			fmt.Printf("Size set to TempDirPath: %d\n", size2-1)
-			size = size2 - 1
-		} else {
-			fmt.Printf("Size set to QRFramesPath: %d\n", size)
-		}
+		fmt.Printf("Size set to TempDirPath: %d\n", size2-2)
+		size = size2 - 2
+	} else if size2-1 < size && AudioFS[0] == "None" {
+		fmt.Printf("Size set to TempDirPath: %d\n", size2-1)
+		size = size2 - 1
+	} else {
+		fmt.Printf("Size set to QRFramesPath: %d\n", size)
+	}
 
-	for x:=0; x<size; x++ {
+	for x := 0; x < size; x++ {
 		fmt.Printf(fmt.Sprintf("%s%s%d.jpeg", TempDirPath[0], VideoName, x) + "\n" + fmt.Sprintf("%s%s%d.png", CCME.Paths[1], CCME.Overlay.OverlayName, x) + "\n")
 		overlayFile := exec.Command("ffmpeg", "-i", fmt.Sprintf("%s%s%d.jpeg", TempDirPath[0], VideoName, x),
 			"-i", fmt.Sprintf("%s%s%d.png", CCME.Paths[1], CCME.Overlay.OverlayName, x),
@@ -257,17 +257,17 @@ func (CCME *CCMEClass) OverlayQR(c chan string) {
 		Output, Error = cmdConstruct.CombinedOutput()
 		if Error != nil {
 			fmt.Println(BytesToString(Output))
-			c<-"Failed to construct back into a video."
+			c <- "Failed to construct back into a video."
 		}
 	case "hevc":
-		cmdConstruct := exec.Command("ffmpeg", "-i", fmt.Sprintf("%s%s%%d.jpeg", TempDirPath[1], VideoName),  "-framerate", AudioFS[1],
-			"-c:v", "libx265", "-b:v", Bitrate, "-maxrate", Bitrate, "-bufsize", BufSize, "-minrate", BufSize,  "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-y",
+		cmdConstruct := exec.Command("ffmpeg", "-i", fmt.Sprintf("%s%s%%d.jpeg", TempDirPath[1], VideoName), "-framerate", AudioFS[1],
+			"-c:v", "libx265", "-b:v", Bitrate, "-maxrate", Bitrate, "-bufsize", BufSize, "-minrate", BufSize, "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-y",
 			"-vsync", "0", "-strict", "-2", fmt.Sprintf("%s%s.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, VideoFormat))
 		codecToUse = "libx265"
 		Output, Error = cmdConstruct.CombinedOutput()
 		if Error != nil {
 			fmt.Println(BytesToString(Output))
-			c<-"Failed to construct back into a video."
+			c <- "Failed to construct back into a video."
 		}
 	case "vp9":
 		cmdConstruct := exec.Command("ffmpeg", "-i", fmt.Sprintf("%s%s%%d.jpeg", TempDirPath[1], VideoName), "-framerate", AudioFS[1],
@@ -277,7 +277,7 @@ func (CCME *CCMEClass) OverlayQR(c chan string) {
 		Output, Error = cmdConstruct.CombinedOutput()
 		if Error != nil {
 			fmt.Println(BytesToString(Output))
-			c<-"Failed to construct back into a video."
+			c <- "Failed to construct back into a video."
 		}
 	case "vp8":
 		cmdConstruct := exec.Command("ffmpeg", "-i", fmt.Sprintf("%s%s%%d.jpeg", TempDirPath[1], VideoName), "-framerate", AudioFS[1],
@@ -287,74 +287,74 @@ func (CCME *CCMEClass) OverlayQR(c chan string) {
 		Output, Error = cmdConstruct.CombinedOutput()
 		if Error != nil {
 			fmt.Println(BytesToString(Output))
-			c<-"Failed to construct back into a video."
+			c <- "Failed to construct back into a video."
 		}
 	default:
 		errorr := os.RemoveAll(TempDirPath[0])
 		if errorr != nil {
 			fmt.Printf("%v\n", errorr)
 		}
-		c<-codec + " not currently supported."
+		c <- codec + " not currently supported."
 	}
 
 	if AudioFS[0] != "None" {
 		switch AudioFS[0] {
 		case "aac":
-			cmdAudioAdd := exec.Command("ffmpeg", "-i", fmt.Sprintf("%s%s.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, VideoFormat), 
-										"-i", fmt.Sprintf("%s%s.%s", TempDirPath[0], VideoName, AudioFS[0]), "-c:v", "copy", "-c:a", "libfdk_aac",
-										"-y", fmt.Sprintf("%s%s%d.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, 2, VideoFormat))
+			cmdAudioAdd := exec.Command("ffmpeg", "-i", fmt.Sprintf("%s%s.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, VideoFormat),
+				"-i", fmt.Sprintf("%s%s.%s", TempDirPath[0], VideoName, AudioFS[0]), "-c:v", "copy", "-c:a", "libfdk_aac",
+				"-y", fmt.Sprintf("%s%s%d.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, 2, VideoFormat))
 			Output, Error = cmdAudioAdd.CombinedOutput()
 			if Error != nil {
 				fmt.Println(BytesToString(Output))
-				c<-"Failed To Re-add Audio"
+				c <- "Failed To Re-add Audio"
 			}
 		case "ogg":
-			cmdAudioAdd := exec.Command("ffmpeg", "-i", fmt.Sprintf("%s%s.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, VideoFormat), 
-										"-i", fmt.Sprintf("%s%s.%s", TempDirPath[0], VideoName, AudioFS[0]), "-c:v", "copy", "-c:a", "libvorbis",
-										"-y", fmt.Sprintf("%s%s%d.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, 2, VideoFormat))
+			cmdAudioAdd := exec.Command("ffmpeg", "-i", fmt.Sprintf("%s%s.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, VideoFormat),
+				"-i", fmt.Sprintf("%s%s.%s", TempDirPath[0], VideoName, AudioFS[0]), "-c:v", "copy", "-c:a", "libvorbis",
+				"-y", fmt.Sprintf("%s%s%d.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, 2, VideoFormat))
 			Output, Error = cmdAudioAdd.CombinedOutput()
 			if Error != nil {
 				fmt.Println(BytesToString(Output))
-				c<-"Failed To Re-add Audio"
+				c <- "Failed To Re-add Audio"
 			}
 		case "mp3":
-			cmdAudioAdd := exec.Command("ffmpeg", "-i", fmt.Sprintf("%s%s.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, VideoFormat), 
-										"-i", fmt.Sprintf("%s%s.%s", TempDirPath[0], VideoName, AudioFS[0]), "-c:v", "copy", "-c:a", "libmp3lame",
-										"-y", fmt.Sprintf("%s%s%d.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, 2, VideoFormat))
+			cmdAudioAdd := exec.Command("ffmpeg", "-i", fmt.Sprintf("%s%s.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, VideoFormat),
+				"-i", fmt.Sprintf("%s%s.%s", TempDirPath[0], VideoName, AudioFS[0]), "-c:v", "copy", "-c:a", "libmp3lame",
+				"-y", fmt.Sprintf("%s%s%d.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, 2, VideoFormat))
 			Output, Error = cmdAudioAdd.CombinedOutput()
 			if Error != nil {
 				fmt.Println(BytesToString(Output))
-				c<-"Failed To Re-add Audio"
+				c <- "Failed To Re-add Audio"
 			}
 		default:
 			errorr := os.RemoveAll(TempDirPath[0])
 			if errorr != nil {
 				fmt.Printf("%v\n", errorr)
 			}
-			c<-AudioFS[0] + " currently not a supported audio format."
+			c <- AudioFS[0] + " currently not a supported audio format."
 		}
 	}
 
 	//Add timer to the bottom of the video
 	if AudioFS[0] != "None" {
 		cmdTimer := exec.Command("ffmpeg", "-i", fmt.Sprintf("%s%s%d.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, 2, VideoFormat), "-vf",
-		 						 "drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSerif.ttf:text='%{pts \\: hms}':x=0:y=h-th:fontsize=16:fontcolor=white@0.9:box=1:boxcolor=black@0.6",
-		 						 "-vsync", "0", "-y", "-c:a", "copy",  "-vcodec", codecToUse, "-threads", "3", "-strict", "-2", fmt.Sprintf("%s%s%d.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, 3, VideoFormat))
+			"drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSerif.ttf:text='%{pts \\: hms}':x=0:y=h-th:fontsize=16:fontcolor=white@0.9:box=1:boxcolor=black@0.6",
+			"-vsync", "0", "-y", "-c:a", "copy", "-vcodec", codecToUse, "-threads", "3", "-strict", "-2", fmt.Sprintf("%s%s%d.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, 3, VideoFormat))
 
 		Output, Error = cmdTimer.CombinedOutput()
 		if Error != nil {
 			fmt.Println(BytesToString(Output))
-			c<-"Failed To Add Timer"
+			c <- "Failed To Add Timer"
 		}
 	} else {
 		cmdTimer := exec.Command("ffmpeg", "-i", fmt.Sprintf("%s%s.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, VideoFormat), "-vf",
-					 "drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSerif.ttf:text='%{pts \\: hms}':x=0:y=h-th:fontsize=16:fontcolor=white@0.9:box=1:boxcolor=black@0.6",
-		 			 "-vsync", "0", "-y", "-c:a", "copy",  "-vcodec", codecToUse, "-threads", "3", "-strict", "-2", fmt.Sprintf("%s%s%d.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, 3, VideoFormat))
+			"drawtext=fontfile=/usr/share/fonts/truetype/freefont/FreeSerif.ttf:text='%{pts \\: hms}':x=0:y=h-th:fontsize=16:fontcolor=white@0.9:box=1:boxcolor=black@0.6",
+			"-vsync", "0", "-y", "-c:a", "copy", "-vcodec", codecToUse, "-threads", "3", "-strict", "-2", fmt.Sprintf("%s%s%d.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, 3, VideoFormat))
 
 		Output, Error = cmdTimer.CombinedOutput()
 		if Error != nil {
 			fmt.Println(BytesToString(Output))
-			c<-"Failed To Add Timer"
+			c <- "Failed To Add Timer"
 		}
 	}
 
@@ -365,7 +365,7 @@ func (CCME *CCMEClass) OverlayQR(c chan string) {
 		os.Remove(fmt.Sprintf("%s%s%d.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, 2, VideoFormat))
 	}
 	os.Rename(fmt.Sprintf("%s%s%d.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, 3, VideoFormat),
-			  fmt.Sprintf("%s%s.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, VideoFormat))
+		fmt.Sprintf("%s%s.%s", CCME.Paths[2], CCME.Overlay.FinalVideoName, VideoFormat))
 
 	fmt.Printf("TempDirPath: %v\n", TempDirPath[0])
 	errorr := os.RemoveAll(TempDirPath[0])
@@ -376,21 +376,20 @@ func (CCME *CCMEClass) OverlayQR(c chan string) {
 	elapsed := end.Sub(start)
 	fmt.Printf("It took %v to overlay the video.\n", elapsed)
 
-	c<-fmt.Sprintf("%s.%s", CCME.Overlay.FinalVideoName, VideoFormat)
+	c <- fmt.Sprintf("%s.%s", CCME.Overlay.FinalVideoName, VideoFormat)
 }
-
 
 func (CCME *CCMEClass) GetVidInfo(c chan map[string]string) {
 	var buf bytes.Buffer
 	Logger := log.New(&buf, "logger: ", log.Llongfile)
 	if !CCME.CheckFunction("GetVidInfo") {
 		fmt.Println("This CCME instance was not constructed to use GetVidInfo, check the instances function argument.")
-		c<-map[string]string{"Status": "FAIL", "Err": "Wrong instance to use this function."}
+		c <- map[string]string{"Status": "FAIL", "Err": "Wrong instance to use this function."}
 	}
 
 	cmd := exec.Command("ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
-		                "stream=codec_name", "-of", "default=noprint_wrappers=1:nokey=1",
-		                fmt.Sprintf("%s%s", CCME.Paths[0], CCME.GetFrames.VideoName))
+		"stream=codec_name", "-of", "default=noprint_wrappers=1:nokey=1",
+		fmt.Sprintf("%s%s", CCME.Paths[0], CCME.GetFrames.VideoName))
 
 	videoCodec, sterr := cmd.CombinedOutput()
 	if sterr != nil {
@@ -400,8 +399,8 @@ func (CCME *CCMEClass) GetVidInfo(c chan map[string]string) {
 	}
 
 	cmd = exec.Command("ffprobe", "-v", "error", "-select_streams", "a:0", "-show_entries",
-					   "stream=codec_name", "-of", "default=noprint_wrappers=1:nokey=1", 
-					   fmt.Sprintf("%s%s", CCME.Paths[0], CCME.GetFrames.VideoName))
+		"stream=codec_name", "-of", "default=noprint_wrappers=1:nokey=1",
+		fmt.Sprintf("%s%s", CCME.Paths[0], CCME.GetFrames.VideoName))
 
 	audioCodec, sterr := cmd.CombinedOutput()
 
@@ -416,44 +415,44 @@ func (CCME *CCMEClass) GetVidInfo(c chan map[string]string) {
 	}
 
 	cmd = exec.Command("ffprobe", "-loglevel", "fatal", "-v", "0", "-count_frames",
-                    "-select_streams", "v:0", "-show_entries",
-                    "stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1",
-					fmt.Sprintf("%s%s", CCME.Paths[0], CCME.GetFrames.VideoName))
+		"-select_streams", "v:0", "-show_entries",
+		"stream=nb_read_frames", "-of", "default=nokey=1:noprint_wrappers=1",
+		fmt.Sprintf("%s%s", CCME.Paths[0], CCME.GetFrames.VideoName))
 
 	frameNumber, sterr := cmd.CombinedOutput()
 	if sterr != nil {
 		Logger.Print(fmt.Printf("ERROR: %s %s\n", sterr, CCME.GetFrames.VideoName))
 		fmt.Println(&buf)
-		c<-map[string]string{"Status": "FAIL", "Err": fmt.Sprintf("ERROR: %s\n%v", frameNumber, sterr)}
+		c <- map[string]string{"Status": "FAIL", "Err": fmt.Sprintf("ERROR: %s\n%v", frameNumber, sterr)}
 	}
 	cmd = exec.Command("ffprobe", "-loglevel", "fatal", "-v", "0", "-of", "csv=p=0", "-select_streams", "0",
-						"-show_entries", "stream=r_frame_rate", 
-						fmt.Sprintf("%s%s", CCME.Paths[0], CCME.GetFrames.VideoName))
+		"-show_entries", "stream=r_frame_rate",
+		fmt.Sprintf("%s%s", CCME.Paths[0], CCME.GetFrames.VideoName))
 	frameRate, sterr := cmd.CombinedOutput()
 	if sterr != nil {
 		Logger.Print(fmt.Printf("ERROR: %s %s\n", sterr, CCME.GetFrames.VideoName))
 		fmt.Println(&buf)
-		c<-map[string]string{"Status": "FAIL", "Err": fmt.Sprintf("ERROR: %s\n%v\n", frameRate, sterr)}
+		c <- map[string]string{"Status": "FAIL", "Err": fmt.Sprintf("ERROR: %s\n%v\n", frameRate, sterr)}
 	}
 	cmd = exec.Command("ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
-					   "stream=profile", "-of", "default=nokey=1:noprint_wrappers=1", fmt.Sprintf("%s%s", CCME.Paths[0], CCME.GetFrames.VideoName))
+		"stream=profile", "-of", "default=nokey=1:noprint_wrappers=1", fmt.Sprintf("%s%s", CCME.Paths[0], CCME.GetFrames.VideoName))
 	videoProfile, sterr := cmd.CombinedOutput()
 	if sterr != nil {
 		Logger.Print(fmt.Printf("ERROR: %s %s\n", sterr, CCME.GetFrames.VideoName))
 		fmt.Println(&buf)
-		c<-map[string]string{"Status": "FAIL", "Err": fmt.Sprintf("ERROR: %s\n%v\n", videoProfile, sterr)}
+		c <- map[string]string{"Status": "FAIL", "Err": fmt.Sprintf("ERROR: %s\n%v\n", videoProfile, sterr)}
 	}
 	cmd = exec.Command("ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
-					   "stream=pix_fmt", "-of", "default=nokey=1:noprint_wrappers=1", fmt.Sprintf("%s%s", CCME.Paths[0], CCME.GetFrames.VideoName))
+		"stream=pix_fmt", "-of", "default=nokey=1:noprint_wrappers=1", fmt.Sprintf("%s%s", CCME.Paths[0], CCME.GetFrames.VideoName))
 	pixelFormat, sterr := cmd.CombinedOutput()
 	if sterr != nil {
 		Logger.Print(fmt.Printf("ERROR: %s %s\n", sterr, CCME.GetFrames.VideoName))
 		fmt.Println(&buf)
-		c<-map[string]string{"Status": "FAIL", "Err": fmt.Sprintf("ERROR: %s\n%v\n", videoProfile, sterr)}
+		c <- map[string]string{"Status": "FAIL", "Err": fmt.Sprintf("ERROR: %s\n%v\n", videoProfile, sterr)}
 	}
-	c<-map[string]string{"Status": "OK", "VideoCodec": BytesToString(videoCodec), "AudioCodec": BytesToString(audioCodec),
-						 "FrameNumber": BytesToString(frameNumber), "FrameRate": BytesToString(frameRate),
-						 "VideoProfile": BytesToString(videoProfile), "PixelFormat": BytesToString(pixelFormat), "Err": "nil"}
+	c <- map[string]string{"Status": "OK", "VideoCodec": BytesToString(videoCodec), "AudioCodec": BytesToString(audioCodec),
+		"FrameNumber": BytesToString(frameNumber), "FrameRate": BytesToString(frameRate),
+		"VideoProfile": BytesToString(videoProfile), "PixelFormat": BytesToString(pixelFormat), "Err": "nil"}
 
 }
 
@@ -465,7 +464,7 @@ func (CCME *CCMEClass) TranscodeVideo(c chan string) {
 	var stderr error
 	var failed = false
 	if !CCME.CheckFunction("EditVideo") {
-		c<-"This ccme instance was not constructed to use editvideo, check the instances function argument."
+		c <- "This ccme instance was not constructed to use editvideo, check the instances function argument."
 	}
 	if CCME.EditVideo.Width == "default" || CCME.EditVideo.Height == "default" {
 		cmd := exec.Command("ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
@@ -500,7 +499,7 @@ func (CCME *CCMEClass) TranscodeVideo(c chan string) {
 	case "0":
 		if encoder == "libvpx" {
 			crfRate = "4"
-		} else { 
+		} else {
 			crfRate = "0"
 		}
 		webmLossless = "1"
@@ -538,46 +537,46 @@ func (CCME *CCMEClass) TranscodeVideo(c chan string) {
 		switch encoder {
 		case "libx264":
 			command = exec.Command("ffmpeg", "-hide_banner", "-i", CCME.EditVideo.VideoPath, "-c:v", encoder, "-x264-params", "\"nal-hrd=cbr\"", "-b:v", CCME.EditVideo.MaxBV, "-minrate", CCME.EditVideo.MaxBV,
-				  					"-maxrate", CCME.EditVideo.MaxBV, "-BufSize", SetBufSize(CCME.EditVideo.MaxBV), "-vf",  fmt.Sprintf("scale=%s:%s", CCME.EditVideo.Width, CCME.EditVideo.Height), "-pix_fmt", "yuv420p", "-c:a", "libfdk_aac",
-				  					 "-preset", CCME.EditVideo.EncodingSpeed, fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
+				"-maxrate", CCME.EditVideo.MaxBV, "-BufSize", SetBufSize(CCME.EditVideo.MaxBV), "-vf", fmt.Sprintf("scale=%s:%s", CCME.EditVideo.Width, CCME.EditVideo.Height), "-pix_fmt", "yuv420p", "-c:a", "libfdk_aac",
+				"-preset", CCME.EditVideo.EncodingSpeed, fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
 		case "libx265":
 			fmt.Println(CCME.EditVideo.VideoPath)
 			command = exec.Command("ffmpeg", "-hide_banner", "-i", CCME.EditVideo.VideoPath, "-c:v", encoder, "-preset", CCME.EditVideo.EncodingSpeed, "-b:v", CCME.EditVideo.MaxBV,
-				  					 "-vf",  fmt.Sprintf("scale=%s:%s", CCME.EditVideo.Width, CCME.EditVideo.Height), "-pix_fmt", "yuv420p", "-c:a", "libfdk_aac", fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
+				"-vf", fmt.Sprintf("scale=%s:%s", CCME.EditVideo.Width, CCME.EditVideo.Height), "-pix_fmt", "yuv420p", "-c:a", "libfdk_aac", fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
 		case "libvpx":
 			command = exec.Command("ffmpeg", "-hide_banner", "-i", CCME.EditVideo.VideoPath, "-c:v", encoder, "-vf", fmt.Sprintf("scale=%s:%s", CCME.EditVideo.Width, CCME.EditVideo.Height), "-minrate", CCME.EditVideo.MaxBV, "-maxrate", CCME.EditVideo.MaxBV, "-b:v", CCME.EditVideo.MaxBV, "-deadline", webmEncodeRate,
-			 						"-c:a", "libvorbis", fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
+				"-c:a", "libvorbis", fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
 		case "libvpx-vp9":
 			command = exec.Command("ffmpeg", "-hide_banner", "-i", CCME.EditVideo.VideoPath, "-c:v", encoder, "-vf", fmt.Sprintf("scale=%s:%s", CCME.EditVideo.Width, CCME.EditVideo.Height), "-minrate", CCME.EditVideo.MaxBV, "-maxrate", CCME.EditVideo.MaxBV, "-b:v", CCME.EditVideo.MaxBV, "-deadline", webmEncodeRate,
-			 						"-c:a", "libvorbis", fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
+				"-c:a", "libvorbis", fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
 		default:
-			command = exec.Command("ffmpeg", "-hide_banner", "-i", "-vf", fmt.Sprintf("scale=%s:%s",  CCME.EditVideo.Width, CCME.EditVideo.Height), 
-									"-b:v", CCME.EditVideo.MaxBV, CCME.EditVideo.VideoPath, fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
+			command = exec.Command("ffmpeg", "-hide_banner", "-i", "-vf", fmt.Sprintf("scale=%s:%s", CCME.EditVideo.Width, CCME.EditVideo.Height),
+				"-b:v", CCME.EditVideo.MaxBV, CCME.EditVideo.VideoPath, fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
 		}
 		stdout, stderr = command.CombinedOutput()
 		if stderr != nil {
-			fmt.Printf("ERROR: %v\n", stderr )
+			fmt.Printf("ERROR: %v\n", stderr)
 		}
 	} else {
 		fmt.Println("No limit Transcoding")
 		switch encoder {
 		case "libx264":
-			command = exec.Command("ffmpeg", "-hide_banner", "-i", CCME.EditVideo.VideoPath, "-c:v", encoder, "-preset", CCME.EditVideo.EncodingSpeed, "-crf", crfRate, 
-				  					 "-vf",  fmt.Sprintf("scale=%s:%s", CCME.EditVideo.Width, CCME.EditVideo.Height), "-pix_fmt", "yuv420p", "-c:a", "libfdk_aac", fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
+			command = exec.Command("ffmpeg", "-hide_banner", "-i", CCME.EditVideo.VideoPath, "-c:v", encoder, "-preset", CCME.EditVideo.EncodingSpeed, "-crf", crfRate,
+				"-vf", fmt.Sprintf("scale=%s:%s", CCME.EditVideo.Width, CCME.EditVideo.Height), "-pix_fmt", "yuv420p", "-c:a", "libfdk_aac", fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
 		case "libx265":
 			command = exec.Command("ffmpeg", "-hide_banner", "-i", CCME.EditVideo.VideoPath, "-c:v", encoder, "-preset", CCME.EditVideo.EncodingSpeed, "-crf", crfRate,
-									"-vf", fmt.Sprintf("scale=%s:%s", CCME.EditVideo.Width, CCME.EditVideo.Height), "-pix_fmt", "yuv420p", "-c:a", "libfdk_aac", fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
+				"-vf", fmt.Sprintf("scale=%s:%s", CCME.EditVideo.Width, CCME.EditVideo.Height), "-pix_fmt", "yuv420p", "-c:a", "libfdk_aac", fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
 		case "libvpx-vp9":
-			command = exec.Command("ffmpeg", "-hide_banner", "-i", CCME.EditVideo.VideoPath, "-c:v", encoder, "-lossless", webmLossless, "-crf", crfRate, 
-									"-deadline", webmEncodeRate, "-vf", fmt.Sprintf("scale=%s:%s", CCME.EditVideo.Width, CCME.EditVideo.Height), "-pix_fmt",
-									"yuv420p", "-c:a", "libvorbis", fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
+			command = exec.Command("ffmpeg", "-hide_banner", "-i", CCME.EditVideo.VideoPath, "-c:v", encoder, "-lossless", webmLossless, "-crf", crfRate,
+				"-deadline", webmEncodeRate, "-vf", fmt.Sprintf("scale=%s:%s", CCME.EditVideo.Width, CCME.EditVideo.Height), "-pix_fmt",
+				"yuv420p", "-c:a", "libvorbis", fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
 		case "libvpx":
 			command = exec.Command("ffmpeg", "-hide_banner", "-i", CCME.EditVideo.VideoPath, "-c:v", encoder, "-lossless", webmLossless, "-crf", crfRate,
-									"-deadline", webmEncodeRate, "-vf", fmt.Sprintf("scale=%s:%s", CCME.EditVideo.Width, CCME.EditVideo.Height), "-pix_fmt",
-									"yuv420p", "-c:a", "libvorbis", fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
+				"-deadline", webmEncodeRate, "-vf", fmt.Sprintf("scale=%s:%s", CCME.EditVideo.Width, CCME.EditVideo.Height), "-pix_fmt",
+				"yuv420p", "-c:a", "libvorbis", fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
 		default:
-			command = exec.Command("ffmpeg", "-hide_banner", "-i", "-vf", fmt.Sprintf("scale=%s:%s",  CCME.EditVideo.Width, CCME.EditVideo.Height), 
-									"-b:v", CCME.EditVideo.MaxBV, CCME.EditVideo.VideoPath, fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
+			command = exec.Command("ffmpeg", "-hide_banner", "-i", "-vf", fmt.Sprintf("scale=%s:%s", CCME.EditVideo.Width, CCME.EditVideo.Height),
+				"-b:v", CCME.EditVideo.MaxBV, CCME.EditVideo.VideoPath, fmt.Sprintf("%s%s.%s", CCME.Paths[0], CCME.EditVideo.OrgVidName, fileType), "-y")
 		}
 		stdout, stderr = command.CombinedOutput()
 		if stderr != nil {
@@ -589,5 +588,5 @@ func (CCME *CCMEClass) TranscodeVideo(c chan string) {
 	fmt.Println("Width: " + CCME.EditVideo.Width + " Height: " + CCME.EditVideo.Height)
 	fmt.Println("Webm encode rate: " + webmEncodeRate + " crfRate: " + crfRate + " webmLossless: " + webmLossless)
 	fmt.Println(EstimateBitrate(CCME.EditVideo.VideoPath))
-	c<-"Done"
+	c <- "Done"
 }

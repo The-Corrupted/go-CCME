@@ -7,18 +7,18 @@ import (
 )
 
 type ArgumentLink struct {
-	Name string
+	Name   string
 	Values map[string]*string
 }
 
-func ParseForm(APIFunction string, r *http.Request)  ArgumentLink {
+func ParseForm(APIFunction string, r *http.Request) ArgumentLink {
 	r.ParseForm()
 	var args ArgumentLink
 	args.Values = make(map[string]*string)
 	switch APIFunction {
 	case "Create":
 		timedFR, _ := strconv.ParseInt(r.Form["FR"][0], 10, 64)
-		if timedFR <= 0  {
+		if timedFR <= 0 {
 			args.Name = "CreateFixed"
 			args.Values["CreateVideoName"] = &r.Form["QRName"][0]
 			args.Values["CreateFrameNumber"] = &r.Form["Frames"][0]
@@ -67,8 +67,8 @@ func ParseForm(APIFunction string, r *http.Request)  ArgumentLink {
 		var VideoPath = data[0].(string)
 		var Name = data[1].(string)
 		formdata := [...]string{r.FormValue("formatForConversion"),
-							  r.FormValue("Quality"), r.FormValue("EncodingSpeed"),
-							  r.FormValue("vidWidth"), r.FormValue("vidHeight")}
+			r.FormValue("Quality"), r.FormValue("EncodingSpeed"),
+			r.FormValue("vidWidth"), r.FormValue("vidHeight")}
 		args.Name = APIFunction
 		args.Values["VideoPath"] = &VideoPath
 		args.Values["VidFormat"] = &formdata[0]

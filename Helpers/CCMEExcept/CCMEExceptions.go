@@ -7,8 +7,8 @@ Try catch functionality for areas where runtime error are very likely to occur.
 package CCMEException
 
 type Catcher struct {
-	Try func()
-	Catch func(Exception)
+	Try     func()
+	Catch   func(Exception)
 	Finally func()
 }
 
@@ -24,7 +24,7 @@ func (TCF Catcher) Do() {
 	}
 	if TCF.Catch != nil {
 		defer func() {
-			if r:= recover(); r != nil {
+			if r := recover(); r != nil {
 				TCF.Catch(r)
 			}
 		}()

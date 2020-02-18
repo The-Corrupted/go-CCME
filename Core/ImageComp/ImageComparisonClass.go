@@ -5,8 +5,8 @@ import (
 )
 
 type PixelValue struct {
-	R, G, B, A uint8 
-	X, Y uint16
+	R, G, B, A uint8
+	X, Y       uint16
 }
 
 type PixelSet struct {
@@ -14,12 +14,12 @@ type PixelSet struct {
 }
 
 type ImageData struct {
-	Set map[string]*PixelSet
+	Set   map[string]*PixelSet
 	Frame uint64
 }
 
 type VideoFrameData struct {
 	sync.RWMutex
 	PixelSets []*ImageData
-	vfgName string
+	vfgName   string
 }

@@ -35,11 +35,11 @@ func ParseJson(APIFunction string, r *http.Request) ArgumentLink {
 		return args
 	case "Create":
 		/*
-		This uses a map of strings as compared to
-		the structs used for others. It is preferable to do it
-		this way to avoid parsing r twice, and allows for less confusing
-		flow control.
-		When possible, use structs instead.
+			This uses a map of strings as compared to
+			the structs used for others. It is preferable to do it
+			this way to avoid parsing r twice, and allows for less confusing
+			flow control.
+			When possible, use structs instead.
 		*/
 		data := make(map[string]string)
 		decoder := json.NewDecoder(r.Body)
@@ -51,13 +51,13 @@ func ParseJson(APIFunction string, r *http.Request) ArgumentLink {
 		args.Name = data["Type"]
 		if args.Name == "CreateFixed" {
 			formDat := [...]string{data["FrameSolidName"], data["FPSSolid"],
-								   data["FramesSolid"]}
-			args.Values["CreateVideoName"] = &formDat[0] //data["FrameSolidName"]
+				data["FramesSolid"]}
+			args.Values["CreateVideoName"] = &formDat[0]       //data["FrameSolidName"]
 			args.Values["CreateFrameNumberRate"] = &formDat[1] //data["FPSSolid"]
-			args.Values["CreateFrameNumber"] = &formDat[2] //data["FramesSolid"]
+			args.Values["CreateFrameNumber"] = &formDat[2]     //data["FramesSolid"]
 		} else {
 			formDat := [...]string{data["calculatedVidLength"], data["calculatedFPS"],
-								   data["FrameTimedName"]}
+				data["FrameTimedName"]}
 			args.Values["CreateVideoTime"] = &formDat[0] //data["calculatedVidLength"]
 			args.Values["CreateFrameRate"] = &formDat[1] //data["calculatedFPS"]
 			args.Values["CreateVideoName"] = &formDat[2] //data["FrameTimedName"]
@@ -67,8 +67,8 @@ func ParseJson(APIFunction string, r *http.Request) ArgumentLink {
 		type Storage struct {
 			OverlayFrames string
 			UnderlayVideo string
-			SaveOverlay string
-			VideoName string
+			SaveOverlay   string
+			VideoName     string
 		}
 		var s Storage
 		decoder := json.NewDecoder(r.Body)
@@ -100,14 +100,14 @@ func ParseJson(APIFunction string, r *http.Request) ArgumentLink {
 		fmt.Println(&buf)
 	case "Analyze":
 		type Storage struct {
-			FramesName string
+			FramesName        string
 			ExpNumberOfFrames string
-			Delete string
+			Delete            string
 		}
 		var s Storage
 		decoder := json.NewDecoder(r.Body)
 		err := decoder.Decode(&s)
-		if  err != nil {
+		if err != nil {
 			fmt.Println("Failed to decode json data.")
 			return args
 		}

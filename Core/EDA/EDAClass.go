@@ -17,18 +17,18 @@ type EDAClass struct {
 }
 
 type Deconstruct struct {
-	VideoName string
+	VideoName  string
 	FramesName string
 }
 
 type Analyze struct {
-	FramesName string
+	FramesName        string
 	ExpNumberOfFrames uint64
-	Delete string
+	Delete            string
 }
 
 type ReturnVal struct {
-	Time string
+	Time  string
 	Frame uint64
 	Error interface{}
 }

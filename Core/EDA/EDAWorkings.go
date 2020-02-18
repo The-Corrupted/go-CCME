@@ -2,10 +2,10 @@ package EDA
 
 import (
 	"fmt"
-	"github.com/The-Corrupted/gozbar"
-	"github.com/The-Corrupted/go-CCME/Helpers/OsHandler"
-	sql "github.com/The-Corrupted/go-CCME/Core/CCMESql"
 	handler "github.com/The-Corrupted/go-CCME/Core/CCMEHandlers"
+	sql "github.com/The-Corrupted/go-CCME/Core/CCMESql"
+	"github.com/The-Corrupted/go-CCME/Helpers/OsHandler"
+	"github.com/The-Corrupted/gozbar"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -18,7 +18,7 @@ import (
 
 func NewScanner() *zbar.Scanner {
 	r := zbar.NewScanner()
-	if r  == nil {
+	if r == nil {
 		fmt.Println("Error: Scanner not made.")
 	}
 	return r
@@ -29,11 +29,11 @@ func NewEDA(Args handler.ArgumentLink) *EDAClass {
 	case "Deconstruct":
 		var UserDir = OsHandler.SetUserDir()
 		Paths := []string{fmt.Sprintf("%s/Videos/StampedVideos/%s", UserDir, *Args.Values["DeconstructVideoName"]),
-						  fmt.Sprintf("%s/Pictures/EDA/%s/", UserDir, *Args.Values["DeconstructFrameNames"])}
-		return &EDAClass {
+			fmt.Sprintf("%s/Pictures/EDA/%s/", UserDir, *Args.Values["DeconstructFrameNames"])}
+		return &EDAClass{
 			Function: Args.Name,
 			Deconstruct: Deconstruct{
-				VideoName: *Args.Values["DeconstructVideoName"],
+				VideoName:  *Args.Values["DeconstructVideoName"],
 				FramesName: *Args.Values["DeconstructFrameNames"],
 			},
 			Paths: Paths,
@@ -45,9 +45,9 @@ func NewEDA(Args handler.ArgumentLink) *EDAClass {
 		return &EDAClass{
 			Function: Args.Name,
 			Analyze: Analyze{
-				FramesName:	*Args.Values["AnalyzeFrameNames"],
+				FramesName:        *Args.Values["AnalyzeFrameNames"],
 				ExpNumberOfFrames: expNumber,
-				Delete:	*Args.Values["AnalyzeDelete"],
+				Delete:            *Args.Values["AnalyzeDelete"],
 			},
 			Paths: Paths,
 		}
@@ -57,17 +57,17 @@ func NewEDA(Args handler.ArgumentLink) *EDAClass {
 
 func (EDA *EDAClass) DeconstructVideo(c chan string) {
 	if !EDA.CheckFunction("Deconstruct") {
-		c<-"This eda instance was not created to use deconstruct, check the instances function argument."
+		c <- "This eda instance was not created to use deconstruct, check the instances function argument."
 	}
 	EDA.MakeDirs()
 	cmd := exec.Command("ffmpeg", "-i", EDA.Paths[0], "-qscale:v", "2", "-start_number",
 		"0", "-vsync", "0", fmt.Sprintf("%s%s%%d.jpeg", EDA.Paths[1], EDA.Deconstruct.FramesName))
 	stdout, stderr := cmd.CombinedOutput()
 	if stderr != nil {
-		c<-fmt.Sprintf("ERROR: %s\n%v", BytesToString(stdout), stderr)
+		c <- fmt.Sprintf("ERROR: %s\n%v", BytesToString(stdout), stderr)
 	}
 	fmt.Printf("%s\n", BytesToString(stdout))
-	c<-fmt.Sprintf("%s", "Success")
+	c <- fmt.Sprintf("%s", "Success")
 }
 
 /*
@@ -108,8 +108,8 @@ func (EDA *EDAClass) AnalyzeImages(c chan string) {
 	var x uint64 = 0
 
 	//-----------------------Begin Analysis (Async File read)----------------------------------
-	for x=0; x < uint64(dirItemNums); x++ {
-		if x % uint64(cpus) == 0 {
+	for x = 0; x < uint64(dirItemNums); x++ {
+		if x%uint64(cpus) == 0 {
 			wg.Wait()
 		}
 		wg.Add(1)
@@ -127,7 +127,7 @@ func (EDA *EDAClass) AnalyzeImages(c chan string) {
 	sort.Slice(cs.ReturnedItems[:], func(i, j int) bool {
 		return cs.ReturnedItems[i].Frame < cs.ReturnedItems[j].Frame
 	})
-	for x=0; x < uint64(len(cs.ReturnedItems)); x++ {
+	for x = 0; x < uint64(len(cs.ReturnedItems)); x++ {
 		var time = cs.ReturnedItems[x].Time
 		var frame = cs.ReturnedItems[x].Frame
 		if ExtraFound == true {
@@ -137,7 +137,7 @@ func (EDA *EDAClass) AnalyzeImages(c chan string) {
 		}
 		if MissingMangledFound == true {
 			CurrentFrame = NewNumber
-			offSet +=  1
+			offSet += 1
 			MissingMangledFound = false
 		}
 		if ConsecutiveMissing == 240 {
@@ -158,17 +158,17 @@ func (EDA *EDAClass) AnalyzeImages(c chan string) {
 			}
 		}
 		fmt.Printf("%d\t%d\n", CurrentFrame, frame)
-		if frame == CurrentFrame && x >= 0  {
+		if frame == CurrentFrame && x >= 0 {
 			LastFrame = CurrentFrame
 			LastFrameData = strconv.FormatUint(frame, 10)
 			goodFrames += 1
 			fmt.Println("QRCode Retrieved: " + LastFrameData)
-			if frame  == Frames {
+			if frame == Frames {
 				finalFrameFound = true
 			}
 			if TimesRepeated != 0 {
 				if ConsecutiveRepeat != false {
-					BufferMessage += fmt.Sprintf("Buffering/Stuttering found at frame %d: Repeated %d times.\n", LastFrame - 1, TimesRepeated)
+					BufferMessage += fmt.Sprintf("Buffering/Stuttering found at frame %d: Repeated %d times.\n", LastFrame-1, TimesRepeated)
 				}
 				TimesRepeated = 0
 				ConsecutiveRepeat = false
@@ -211,7 +211,7 @@ func (EDA *EDAClass) AnalyzeImages(c chan string) {
 	then := timef.Now()
 	elapsed := then.Sub(now)
 	fmt.Printf("Elapsed time: %v\n", elapsed)
-	percent := (float64(MangledOrMissing)/float64(EDA.Analyze.ExpNumberOfFrames)) * 100
+	percent := (float64(MangledOrMissing) / float64(EDA.Analyze.ExpNumberOfFrames)) * 100
 	finalResult := fmt.Sprintf("%.3f%% of frames mangled or missing\n", percent)
 	lastID := sql.Last_Id()
 	ID := lastID + 1
@@ -233,5 +233,3 @@ func (EDA *EDAClass) AnalyzeImages(c chan string) {
 	fmt.Println(FullMessage)
 	c <- "Success"
 }
-
-
