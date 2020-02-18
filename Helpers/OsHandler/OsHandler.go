@@ -1,12 +1,10 @@
 package OsHandler
 
 import (
-	"runtime"
-	"os"
 	"fmt"
+	"os"
+	"runtime"
 )
-
-
 
 func SetUserDir() string {
 	if runtime.GOOS == "windows" {

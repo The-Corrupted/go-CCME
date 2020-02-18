@@ -1,18 +1,17 @@
 package ImageComp
 
 import (
+	"bytes"
+	"compress/zlib"
+	"encoding/gob"
+	"errors"
+	"fmt"
 	"image"
 	"image/jpeg"
-	"os"
-	"fmt"
-	"sync"
 	"io"
-	"errors"
-	"bytes"
-	"encoding/gob"
-	"compress/zlib"
+	"os"
+	"sync"
 )
-
 
 // ---------------------------------VideoFrameData member functions------------------------------
 
@@ -30,16 +29,16 @@ func (vfg *VideoFrameData) ReturnName() string {
 }
 
 func (vfg *VideoFrameData) ReturnFrameData(frame uint64) (*ImageData, error) {
-	if frame == 0 || frame-1 > uint64(len(vfg.PixelSets)) { 
-		return nil, errors.New("Bad frame selected") 
+	if frame == 0 || frame-1 > uint64(len(vfg.PixelSets)) {
+		return nil, errors.New("Bad frame selected")
 	}
-	if vfg.PixelSets[frame-1].Frame == frame  { 
-		return vfg.PixelSets[frame-1], nil  
+	if vfg.PixelSets[frame-1].Frame == frame {
+		return vfg.PixelSets[frame-1], nil
 	}
 	return nil, errors.New("Frame not found")
 }
 
-func (vfg *VideoFrameData) ReturnPixelSet(frame uint64, key string) ( *PixelSet, error ) {
+func (vfg *VideoFrameData) ReturnPixelSet(frame uint64, key string) (*PixelSet, error) {
 	frameData, err := vfg.ReturnFrameData(frame)
 	if err != nil {
 		return nil, err
@@ -47,15 +46,15 @@ func (vfg *VideoFrameData) ReturnPixelSet(frame uint64, key string) ( *PixelSet,
 	return frameData.Set[key], nil
 }
 
-func (vfg *VideoFrameData) ReturnPixelValue(PixelSet *PixelSet, index uint16) ( []uint8, error ) {
+func (vfg *VideoFrameData) ReturnPixelValue(PixelSet *PixelSet, index uint16) ([]uint8, error) {
 	index -= 1
-	if index - 1 > uint16(len(PixelSet.Pixels)) || index - 1 < 0 {
+	if index-1 > uint16(len(PixelSet.Pixels)) || index-1 < 0 {
 		return []uint8{}, errors.New("Index out of range")
 	}
 	return []uint8{PixelSet.Pixels[index].R, PixelSet.Pixels[index].G, PixelSet.Pixels[index].B, PixelSet.Pixels[index].A}, nil
 }
 
-func (vfg *VideoFrameData) ReturnPixelLocation(PixelSet *PixelSet, index uint16) ( []uint16, error ) {
+func (vfg *VideoFrameData) ReturnPixelLocation(PixelSet *PixelSet, index uint16) ([]uint16, error) {
 	index -= 1
 	if index > uint16(len(PixelSet.Pixels)) || index < 0 {
 		return []uint16{}, errors.New("Index out of range")
@@ -84,7 +83,7 @@ func (vfg *VideoFrameData) ReadFrame(c chan string, videoName string, frameNumbe
 }
 
 func (vfg *VideoFrameData) StoreFrame(frameNumber uint64) bool {
-	fileToCreate = fmt.Sprintf("%s%d.txt", vfg.vfgName, frameNumber)
+	var fileToCreate = fmt.Sprintf("%s%d.txt", vfg.vfgName, frameNumber)
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 	enc.Encode(vfg.PixelSets)
@@ -95,7 +94,7 @@ func (vfg *VideoFrameData) StoreFrame(frameNumber uint64) bool {
 	defer w.Close()
 	_, err := os.Create(fileToCreate)
 	if err != nil {
-			fmt.Println(err)
+		fmt.Println(err)
 	}
 	file, err := os.OpenFile(fileToCreate, os.O_WRONLY, os.ModeAppend)
 	if err != nil {
@@ -108,8 +107,8 @@ func (vfg *VideoFrameData) StoreFrame(frameNumber uint64) bool {
 }
 
 func (vfg *VideoFrameData) ReadStoredFrameData(frameNumber uint64) bool {
-	fileToOpen = fmt.Sprintf("%s%d.txt", vfg.vfgName, frameNumber)
-	file, err := os.OpenFile(fileToOpen, 0s.O_RDONLY, 04)
+	var fileToOpen = fmt.Sprintf("%s%d.txt", vfg.vfgName, frameNumber)
+	file, err := os.OpenFile(fileToOpen, os.O_RDONLY, 04)
 	if err != nil {
 		fmt.Println("Failed to open file. Does it exist?")
 		return false
@@ -117,7 +116,7 @@ func (vfg *VideoFrameData) ReadStoredFrameData(frameNumber uint64) bool {
 	
 }
 
-  //----------------------------Video Frame Data Private Functions---------------------
+//----------------------------Video Frame Data Private Functions---------------------
 
 func getPixels(file io.Reader, frameNumber uint64) (*ImageData, error) {
 	img, _, err := image.Decode(file)
@@ -128,8 +127,8 @@ func getPixels(file io.Reader, frameNumber uint64) (*ImageData, error) {
 	}
 	bounds := img.Bounds()
 	width, height := uint16(bounds.Max.X), uint16(bounds.Max.Y)
-	var xVals = [4]uint16{width/2, width/4, width - width/4, width - width/6 }
-	var yVals = [4]uint16{height/2, height/4, height - height/4, height - height/6}
+	var xVals = [4]uint16{width / 2, width / 4, width - width/4, width - width/6}
+	var yVals = [4]uint16{height / 2, height / 4, height - height/4, height - height/6}
 	var x uint8 = 0
 	for ; x < 4; x++ {
 		imageData.Set[fmt.Sprintf("imgX%d", x)] = scroll(img, yVals[x], width, "h")
@@ -144,7 +143,7 @@ func getPixels(file io.Reader, frameNumber uint64) (*ImageData, error) {
 func scroll(img image.Image, startPos uint16, end uint16, direction string) *PixelSet {
 	var Pixels PixelSet
 	var x uint16 = 1
-	switch(direction) {
+	switch direction {
 	case "v":
 		for ; x < end; x++ {
 			var r, g, b, a uint32 = img.At(int(startPos), int(x)).RGBA()
@@ -182,5 +181,5 @@ func scroll(img image.Image, startPos uint16, end uint16, direction string) *Pix
 		}
 		break
 	}
-	return &Pixels	
+	return &Pixels
 }

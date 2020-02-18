@@ -2,6 +2,7 @@ package CCME
 
 import (
 	"fmt"
+	"github.com/The-Corrupted/go-CCME/Helpers/OsHandler"
 	"io"
 	"net/http"
 	"os"
@@ -9,7 +10,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"github.com/The-Corrupted/go-CCME/Helpers/OsHandler"
 )
 
 func DownloadFile(APIFunction string, r *http.Request) []interface{} {
@@ -40,7 +40,7 @@ func DownloadFile(APIFunction string, r *http.Request) []interface{} {
 		}
 		fmt.Println("File type found.")
 		//Construct File Name
-		file.Seek(0,0)
+		file.Seek(0, 0)
 		split := strings.Split(http.DetectContentType(buffer), "/")
 		name := strings.Split(header.Filename, ".")
 		fullFile := fmt.Sprintf("%s.%s", name[0], split[1])
@@ -52,7 +52,7 @@ func DownloadFile(APIFunction string, r *http.Request) []interface{} {
 		}
 		fmt.Println(fullFile)
 
-	//--------------------Save File To Disk If File Error and Error hasn't occured-------------------
+		//--------------------Save File To Disk If File Error and Error hasn't occured-------------------
 
 		if err == nil && fileerror == 0 {
 			out, err := os.Create(fmt.Sprintf("%s/Videos/UnderlayVids/%s", UserDir, fullFile))
@@ -97,7 +97,7 @@ func DownloadFile(APIFunction string, r *http.Request) []interface{} {
 		fmt.Println("Construct video name.")
 		name := strings.Split(header.Filename, ".")
 		fmt.Println(name)
-		file.Seek(0,0)
+		file.Seek(0, 0)
 		split := strings.Split(http.DetectContentType(buffer), "/")
 		fullFile := fmt.Sprintf("%s.%s", name[0], name[1])
 		fullFile = strings.Trim(fullFile, "\n")
@@ -146,7 +146,7 @@ func DownloadFile(APIFunction string, r *http.Request) []interface{} {
 		fmt.Println("Contructing video file name.")
 		name := strings.Split(header.Filename, ".")
 		fmt.Println(name)
-		file.Seek(0,0)
+		file.Seek(0, 0)
 		split := strings.Split(http.DetectContentType(buffer), "/")
 		fullFile := fmt.Sprintf("%s.%s", name[0], name[1])
 		fullFile = strings.Trim(fullFile, "\n")
@@ -179,7 +179,7 @@ func DownloadFile(APIFunction string, r *http.Request) []interface{} {
 		data = append(data, name)
 		data = append(data, fullFile)
 		data = append(data, VideoPath)
-		return data	
+		return data
 	}
 	return data
 }
@@ -205,18 +205,17 @@ func GetTimeInSeconds(formatedTime string) uint64 {
 	TimeSplitters := strings.Split(formatedTime, ":")
 	Seconds, _ := strconv.ParseUint(TimeSplitters[1], 10, 32)
 	Minutes, _ := strconv.ParseUint(TimeSplitters[0], 10, 32)
-	Seconds = uint64(Seconds) + ( uint64(Minutes) * 60 )
+	Seconds = uint64(Seconds) + (uint64(Minutes) * 60)
 	return Seconds
 }
 
 func SplitAndConvert(formatedFR string) float64 {
 	split := strings.Split(formatedFR, "/")
-	Numerator, _ := strconv.ParseFloat(split[0],64)
+	Numerator, _ := strconv.ParseFloat(split[0], 64)
 	Denominator, _ := strconv.ParseFloat(split[1], 64)
-	var Result = Numerator/Denominator
+	var Result = Numerator / Denominator
 	return Result
 }
-
 
 func GetAudioAndFramerate(VideoName string) []string {
 	Slice := make([]string, 2)
@@ -280,18 +279,18 @@ func GetVideoCodec(s string, extension string) string {
 		return "mpeg2video"
 	}
 	cmd := exec.Command("ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
-						"stream=codec_name", "-of", "default=noprint_wrappers=1:nokey=1", s)
+		"stream=codec_name", "-of", "default=noprint_wrappers=1:nokey=1", s)
 
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Sprintf("%v: FAILED", err) 
-	} 
+		return fmt.Sprintf("%v: FAILED", err)
+	}
 	n := len(out)
 	byteString := string(out[:n-1])
 	return byteString
 }
 
-func ( CCME *CCMEClass ) CheckFunction(funct string) bool {
+func (CCME *CCMEClass) CheckFunction(funct string) bool {
 	if funct == CCME.Function {
 		return true
 	}
@@ -334,9 +333,9 @@ func SetBufSize(maxbv string) string {
 
 func EstimateBitrate(video string) (string, error) {
 	cmdSize := exec.Command("ffprobe", "-hide_banner", "-v", "error", "-show_entries", "format=size", "-of",
-						"default=noprint_wrappers=1:nokey=1", video)
+		"default=noprint_wrappers=1:nokey=1", video)
 	cmdTime := exec.Command("ffprobe", "-hide_banner", "-v", "error", "-show_entries", "format=duration", "-of",
-							"default=noprint_wrappers=1:nokey=1", video)
+		"default=noprint_wrappers=1:nokey=1", video)
 
 	byteSize, stderr := cmdSize.CombinedOutput()
 	if stderr != nil {
@@ -346,7 +345,7 @@ func EstimateBitrate(video string) (string, error) {
 	if stderr != nil {
 		return "FAILED", stderr
 	}
-//	fmt.Println(BytesToString(byteSize) + " " + BytesToString(byteTime))
+	//	fmt.Println(BytesToString(byteSize) + " " + BytesToString(byteTime))
 	Size, err := strconv.ParseFloat(BytesToString(byteSize), 64)
 	if err != nil {
 		return "FAIL", err
@@ -365,8 +364,8 @@ func EstimateBitrate(video string) (string, error) {
 }
 
 func GetVideoProfile(video string) (string, error) {
-	cmdProfile := exec.Command("ffprobe", "-hide_banner", "-v", "error", "-select_streams", "v:0", 
-							  "-show_entries", "stream=profile", "-of", "default=noprint_wrappers=1:nokey=1", video)
+	cmdProfile := exec.Command("ffprobe", "-hide_banner", "-v", "error", "-select_streams", "v:0",
+		"-show_entries", "stream=profile", "-of", "default=noprint_wrappers=1:nokey=1", video)
 
 	byteProfile, stderr := cmdProfile.CombinedOutput()
 	if stderr != nil {
@@ -377,7 +376,7 @@ func GetVideoProfile(video string) (string, error) {
 
 func GetVideoPixelFormat(video string) (string, error) {
 	cmdPixelValue := exec.Command("ffprobe", "-hide_banner", "-v", "-error", "-select_streams", "v:0",
-								 "-show_entries", "stream=pix_fmt", "-of", "default=noprint_wrappers=1:nokey=1", video)
+		"-show_entries", "stream=pix_fmt", "-of", "default=noprint_wrappers=1:nokey=1", video)
 
 	bytePixVal, stderr := cmdPixelValue.CombinedOutput()
 	if stderr != nil {
@@ -388,5 +387,5 @@ func GetVideoPixelFormat(video string) (string, error) {
 
 // func ReadImagePixels(imagePath string) [][]PixelValue {
 // 	HorizontalPixels := make([]PixelValue, 0)
-	
+
 // }

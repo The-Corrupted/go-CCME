@@ -1,12 +1,12 @@
 package CCMEHandlers
 
 import (
-	"net/http"
 	"fmt"
-	"strings"
-	"os"
-	"io"
 	"github.com/The-Corrupted/go-CCME/Helpers/OsHandler"
+	"io"
+	"net/http"
+	"os"
+	"strings"
 )
 
 func DownloadFile(APIFunction string, r *http.Request) []interface{} {
@@ -37,7 +37,7 @@ func DownloadFile(APIFunction string, r *http.Request) []interface{} {
 		}
 		fmt.Println("File type found.")
 		//Construct File Name
-		file.Seek(0,0)
+		file.Seek(0, 0)
 		split := strings.Split(http.DetectContentType(buffer), "/")
 		name := strings.Split(header.Filename, ".")
 		fullFile := fmt.Sprintf("%s.%s", name[0], split[1])
@@ -49,7 +49,7 @@ func DownloadFile(APIFunction string, r *http.Request) []interface{} {
 		}
 		fmt.Println(fullFile)
 
-	//--------------------Save File To Disk If File Error and Error hasn't occured-------------------
+		//--------------------Save File To Disk If File Error and Error hasn't occured-------------------
 
 		if err == nil && fileerror == 0 {
 			out, err := os.Create(fmt.Sprintf("%s/Videos/UnderlayVids/%s", UserDir, fullFile))
@@ -94,7 +94,7 @@ func DownloadFile(APIFunction string, r *http.Request) []interface{} {
 		fmt.Println("Construct video name.")
 		name := strings.Split(header.Filename, ".")
 		fmt.Println(name)
-		file.Seek(0,0)
+		file.Seek(0, 0)
 		split := strings.Split(http.DetectContentType(buffer), "/")
 		fullFile := fmt.Sprintf("%s.%s", name[0], name[1])
 		fullFile = strings.Trim(fullFile, "\n")
@@ -143,7 +143,7 @@ func DownloadFile(APIFunction string, r *http.Request) []interface{} {
 		fmt.Println("Contructing video file name.")
 		name := strings.Split(header.Filename, ".")
 		fmt.Println(name)
-		file.Seek(0,0)
+		file.Seek(0, 0)
 		split := strings.Split(http.DetectContentType(buffer), "/")
 		fullFile := fmt.Sprintf("%s.%s", name[0], name[1])
 		fullFile = strings.Trim(fullFile, "\n")
@@ -176,7 +176,7 @@ func DownloadFile(APIFunction string, r *http.Request) []interface{} {
 		data = append(data, name)
 		data = append(data, fullFile)
 		data = append(data, VideoPath)
-		return data	
+		return data
 	}
 	return data
 }

@@ -2,16 +2,16 @@ package EDA
 
 import (
 	"fmt"
+	CCMEExcept "github.com/The-Corrupted/go-CCME/Helpers/CCMEExcept"
+	"github.com/The-Corrupted/go-CCME/Helpers/OsHandler"
+	"github.com/The-Corrupted/gozbar"
 	"image"
-	"image/jpeg"
 	"image/draw"
+	"image/jpeg"
 	"os"
 	"strconv"
 	"strings"
 	"sync"
-	CCMEExcept "github.com/The-Corrupted/go-CCME/Helpers/CCMEExcept"
-	"github.com/The-Corrupted/gozbar"
-	"github.com/The-Corrupted/go-CCME/Helpers/OsHandler"
 )
 
 func setCropZone(width int, height int) (int, int) {
@@ -19,41 +19,41 @@ func setCropZone(width int, height int) (int, int) {
 	//excessive checks.
 	if width >= 3840 && height >= 1080 {
 		if height >= 2160 {
-			return width/12, height/8
+			return width / 12, height / 8
 		}
-		return width/12, height/4
+		return width / 12, height / 4
 	}
 	if width >= 1920 && height > 720 {
 		if height >= 1080 {
-			return width/7, height/4
+			return width / 7, height / 4
 		}
-		return width/7, height/2
+		return width / 7, height / 2
 	}
 	if width >= 1280 && height >= 720 {
 		if height >= 1080 {
-			return width/5, height/4
+			return width / 5, height / 4
 		}
-		return width/5, height/2
+		return width / 5, height / 2
 	}
 	if width >= 960 && height >= 768 {
 		if height >= 960 {
-			return width/3, height/3
+			return width / 3, height / 3
 		}
-		return width/3, height/3
+		return width / 3, height / 3
 	}
 	if width >= 720 && height >= 480 {
 		if height == 600 {
-			return int(float32(width)/2.5), height/2
+			return int(float32(width) / 2.5), height / 2
 		}
-		return int(float32(width)/2.5), int(float32(height)/1.5)
+		return int(float32(width) / 2.5), int(float32(height) / 1.5)
 	}
 	if width == 640 && height >= 360 {
 		if height >= 480 {
-			return int(float32(width)/2.5), int(float32(height)/1.5)
-		} 
-		return int(float32(width)/2.5), int(float32(height)/1.3)
+			return int(float32(width) / 2.5), int(float32(height) / 1.5)
+		}
+		return int(float32(width) / 2.5), int(float32(height) / 1.3)
 	} else {
-		return width/1, height/1
+		return width / 1, height / 1
 	}
 }
 
@@ -71,7 +71,7 @@ func getImageDimension(imagePath string) (int, int) {
 
 func (cs *ConcurrentSlice) ReadImage(c chan string, file string, filename string, wg *sync.WaitGroup) {
 	defer wg.Done()
-	CCMEExcept.Catcher {
+	CCMEExcept.Catcher{
 		Try: func() {
 			globalGrab := ""
 			scanner := NewScanner()
@@ -86,7 +86,7 @@ func (cs *ConcurrentSlice) ReadImage(c chan string, file string, filename string
 			width, height := getImageDimension(file)
 			cropw, croph := setCropZone(width, height)
 
-			subi := i.(SubImager).SubImage(image.Rect(0,0,cropw, croph))
+			subi := i.(SubImager).SubImage(image.Rect(0, 0, cropw, croph))
 			img := zbar.FromImage(subi)
 			res := scanner.Scan(img)
 			if res == 0 {
@@ -112,7 +112,7 @@ func (cs *ConcurrentSlice) ReadImage(c chan string, file string, filename string
 			fmt.Printf("GlobalGrab: %s", globalGrab)
 			split := strings.Split(globalGrab, "\n")
 			time, frame := split[0], split[1]
-		//	info := fmt.Sprintf("Time: " + time + " frame#: " + frame)
+			//	info := fmt.Sprintf("Time: " + time + " frame#: " + frame)
 			frameInt, _ := strconv.ParseUint(frame, 10, 64)
 			cs.Lock()
 			cs.ReturnedItems = append(cs.ReturnedItems, ReturnVal{time, frameInt, nil})
@@ -126,7 +126,7 @@ func (cs *ConcurrentSlice) ReadImage(c chan string, file string, filename string
 			i, _ := jpeg.Decode(f)
 			width, height := getImageDimension(file)
 			cropw, croph := setCropZone(width, height)
-			subi := i.(SubImager).SubImage(image.Rect(0,0,cropw,croph))
+			subi := i.(SubImager).SubImage(image.Rect(0, 0, cropw, croph))
 			bounds := subi.Bounds()
 			imgGray := image.NewGray(bounds)
 			draw.Draw(imgGray, bounds, subi, image.ZP, draw.Src)
@@ -139,7 +139,7 @@ func (cs *ConcurrentSlice) ReadImage(c chan string, file string, filename string
 	}.Do()
 }
 
-func ( EDA *EDAClass ) CheckFunction(funct string) bool {
+func (EDA *EDAClass) CheckFunction(funct string) bool {
 	if funct == EDA.Function {
 		return true
 	}

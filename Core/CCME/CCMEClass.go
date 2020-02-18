@@ -12,18 +12,18 @@ type CCMEClass struct {
 }
 
 type Create struct {
-	PhotoName string
-	GenNumber uint64
-	FPS float64
+	PhotoName     string
+	GenNumber     uint64
+	FPS           float64
 	FormattedTime string
 }
 
 type Overlay struct {
-	UnderlayVideo string
-	OverlayName string
+	UnderlayVideo   string
+	OverlayName     string
 	OverlayPosition string
-	SaveOverlay string
-	FinalVideoName string
+	SaveOverlay     string
+	FinalVideoName  string
 }
 
 type GetFrames struct {
@@ -31,22 +31,22 @@ type GetFrames struct {
 }
 
 type EditVideo struct {
-	VideoPath string
-	NewFormat string
-	Quality string
+	VideoPath     string
+	NewFormat     string
+	Quality       string
 	EncodingSpeed string
-	Width string
-	Height string
-	OrgVidName string
-	MaxBV string
+	Width         string
+	Height        string
+	OrgVidName    string
+	MaxBV         string
 }
 
 type DeleteDownload struct {
 	DeleteOrDownload string
-	File string
+	File             string
 }
 
 type TimeCounter struct {
-	TimeValues []uint8
+	TimeValues  []uint8
 	ZPaddedTime string
 }
